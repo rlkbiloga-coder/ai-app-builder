@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: appbuilder
+      POSTGRES_PASSWORD: troque
+      POSTGRES_DB: appbuilder
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    environment:
+      SECRET_KEY: troque-por-chave-longa
+      DATABASE_URL: postgresql+psycopg2://appbuilder:troque@db:5432/appbuilder
+      CORS_ORIGINS: http://localhost:8080
+      AI_PROVIDER: demo
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+      args:
+        VITE_API_BASE: http://localhost:8000/api/v1
+    ports:
+      - "8080:80"
+volumes:
+  pgdata:
